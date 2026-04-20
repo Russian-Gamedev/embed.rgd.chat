@@ -1,0 +1,31 @@
+{
+  "name": "embed.rgd.chat",
+  "version": "0.0.1",
+  "license": "ISC",
+  "author": "RGD Community",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Russian-Gamedev/embed.rgd.chat.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Russian-Gamedev/embed.rgd.chat#issues"
+  },
+  "homepage": "https://github.com/Russian-Gamedev/embed.rgd.chat#readme",
+  "scripts": {
+    "start:dev": "bun --watch ./src/main.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@takumi-rs/core": "^0.73.1",
+    "@takumi-rs/helpers": "^0.73.1",
+    "@takumi-rs/image-response": "^0.73.1",
+    "@types/react": "^19.2.14",
+    "react": "^19.2.4"
+  }
+}
