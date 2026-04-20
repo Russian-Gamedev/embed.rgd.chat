@@ -15,7 +15,10 @@ export function requestLoggerMiddleware<Route extends string>(
     const start = performance.now();
     const { method } = request;
     const { pathname } = new URL(request.url);
-    const ip = server.requestIP(request)?.address ?? "unknown";
+    const ip =
+      request.headers.get("x-forwarded-for") ||
+      server.requestIP(request)?.address ||
+      "unknown";
 
     try {
       const response = await handler(request, server);
@@ -28,9 +31,7 @@ export function requestLoggerMiddleware<Route extends string>(
       return response;
     } catch (err) {
       const ms = (performance.now() - start).toFixed(1);
-      requestLogger(
-        `${method} ${pathname} - ERROR | ${ms}ms | ${ip}`,
-      );
+      requestLogger(`${method} ${pathname} - ERROR | ${ms}ms | ${ip}`);
       throw err;
     }
   };
