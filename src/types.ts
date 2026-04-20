@@ -1,3 +1,5 @@
+export type BunServer = Bun.Server<undefined>;
+
 export interface InviteInfo {
   code: string;
   title: string;

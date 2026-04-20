@@ -1,27 +1,29 @@
-import { RedisClient } from "bun";
+import { connectRedis } from "./redis";
 import { renderInviteBanner } from "./embed/guild-banner";
 import { Color, createLogger } from "./utils";
-import { redisCacheMiddleware } from "./middleware";
 import { checkRequiredEnvVars } from "./config";
+import { redisCacheMiddleware } from "./middlewares/cache.middleware";
+import { middlewares } from "./middlewares";
+import { requestLoggerMiddleware } from "./middlewares/logger.middleware";
 
 checkRequiredEnvVars();
 
 const logger = createLogger("main", Color.lime);
 
-const redis = new RedisClient();
-logger("Connecting to Redis...");
-await redis.connect();
-logger("Connected to Redis!");
+await connectRedis();
 
-const RedisMiddleware = redisCacheMiddleware(redis);
+const RedisMiddleware = redisCacheMiddleware();
 
 const server = Bun.serve({
   port: process.env.PORT ? parseInt(process.env.PORT) : 3000,
   routes: {
-    "/invite/:code/banner": RedisMiddleware("invite", renderInviteBanner),
+    "/invite/:code/banner": middlewares(
+      requestLoggerMiddleware,
+      RedisMiddleware("invite", renderInviteBanner),
+    ),
     "/health": () => new Response("OK"),
   },
-  fetch(req) {
+  fetch() {
     return new Response("404 Not Found", { status: 404 });
   },
 });

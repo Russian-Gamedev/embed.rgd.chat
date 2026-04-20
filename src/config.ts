@@ -9,3 +9,9 @@ export function checkRequiredEnvVars() {
     }
   }
 }
+
+const parsed = parseInt(process.env.IMAGE_CACHE_TTL_SECONDS ?? "900", 10);
+if (Number.isNaN(parsed) || parsed <= 0) {
+  throw new Error("IMAGE_CACHE_TTL_SECONDS must be a positive integer");
+}
+export const IMAGE_CACHE_TTL_SECONDS = parsed;

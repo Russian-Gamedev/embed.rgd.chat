@@ -1,6 +1,7 @@
 import ImageResponse from "@takumi-rs/image-response";
 import { renderer } from "../renderer";
 import type { BunRequest } from "bun";
+import type { BunServer } from "../types";
 import { API } from "../api";
 import { JsonResponse } from "../utils";
 
@@ -12,7 +13,7 @@ interface InviteBannerProps {
   banner?: string | null;
 }
 
-export async function renderInviteBanner(request: BunRequest) {
+export async function renderInviteBanner(request: BunRequest, _server: BunServer) {
   const width = 500;
   const height = 220;
 
