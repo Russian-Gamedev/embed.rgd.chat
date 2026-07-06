@@ -14,7 +14,7 @@
 	"homepage": "https://github.com/Russian-Gamedev/embed.rgd.chat#readme",
 	"scripts": {
 		"start:dev": "bun --watch ./src/main.ts",
-		"lint": "biome check --write",
+		"lint": "biome check --write --unsafe",
 		"check": "bun lint && bun test"
 	},
 	"devDependencies": {
