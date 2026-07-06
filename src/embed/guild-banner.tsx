@@ -1,10 +1,11 @@
 import ImageResponse from "@takumi-rs/image-response";
 import type { BunRequest } from "bun";
-import { API } from "../lib/api";
-import { createCache } from "../lib/cache";
-import { renderer } from "../lib/renderer";
-import type { BunServer, InviteInfo } from "../lib/types";
+import type { InviteInfo } from "../lib/api";
+import { API } from "../lib/api/api";
+import { createCache } from "../lib/cache/cache";
+import type { BunServer } from "../lib/types";
 import { Color, createLogger, JsonResponse } from "../lib/utils";
+import { renderer } from "../renderer";
 
 const logger = createLogger("guild-banner", Color.magenta);
 const imageFetchCache = createCache<Promise<ArrayBuffer>>(600_000);
