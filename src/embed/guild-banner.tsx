@@ -48,7 +48,7 @@ export async function renderInviteBanner(request: BunRequest, _server: BunServer
 		banner: inviteInfo.banner_url,
 	};
 
-	const response = new ImageResponse(
+	return new ImageResponse(
 		<div
 			style={{
 				fontFamily: "Mulish",
@@ -60,7 +60,6 @@ export async function renderInviteBanner(request: BunRequest, _server: BunServer
 				flexDirection: "column",
 			}}
 		>
-			{/* Banner Background */}
 			{props.banner ? (
 				<img
 					src={props.banner}
@@ -86,7 +85,6 @@ export async function renderInviteBanner(request: BunRequest, _server: BunServer
 				/>
 			)}
 
-			{/* Content Container */}
 			<div
 				style={{
 					padding: 16,
@@ -95,7 +93,6 @@ export async function renderInviteBanner(request: BunRequest, _server: BunServer
 					flex: 1,
 				}}
 			>
-				{/* Server Icon and Name */}
 				<div
 					style={{
 						display: "flex",
@@ -127,7 +124,6 @@ export async function renderInviteBanner(request: BunRequest, _server: BunServer
 					</div>
 				</div>
 
-				{/* Stats */}
 				<div
 					style={{
 						display: "flex",
@@ -135,7 +131,6 @@ export async function renderInviteBanner(request: BunRequest, _server: BunServer
 						marginBottom: 16,
 					}}
 				>
-					{/* Online Members */}
 					<div style={{ display: "flex", alignItems: "center", gap: 6 }}>
 						<div
 							style={{
@@ -150,7 +145,6 @@ export async function renderInviteBanner(request: BunRequest, _server: BunServer
 						</span>
 					</div>
 
-					{/* Total Members */}
 					<div style={{ display: "flex", alignItems: "center", gap: 6 }}>
 						<div
 							style={{
@@ -166,7 +160,6 @@ export async function renderInviteBanner(request: BunRequest, _server: BunServer
 					</div>
 				</div>
 
-				{/* Join Button */}
 				<div
 					style={{
 						backgroundColor: "#248046",
@@ -199,11 +192,4 @@ export async function renderInviteBanner(request: BunRequest, _server: BunServer
 			onError: (error) => logger(`Render failed: ${error}`),
 		},
 	);
-
-	try {
-		await response.ready;
-		return response;
-	} catch {
-		return new Response("Failed to generate image", { status: 500 });
-	}
 }
