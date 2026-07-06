@@ -1,9 +1,9 @@
-import { connectRedis } from "./redis";
 import { renderInviteBanner } from "./embed/guild-banner";
-import { Color, createLogger } from "./utils";
-import { checkRequiredEnvVars } from "./config";
-import { redisCacheMiddleware } from "./middlewares/cache.middleware";
+import { checkRequiredEnvVars } from "./lib/config";
+import { connectRedis } from "./lib/redis";
+import { Color, createLogger } from "./lib/utils";
 import { middlewares } from "./middlewares";
+import { redisCacheMiddleware } from "./middlewares/cache.middleware";
 import { requestLoggerMiddleware } from "./middlewares/logger.middleware";
 
 checkRequiredEnvVars();
