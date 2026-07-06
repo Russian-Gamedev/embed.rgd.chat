@@ -21,8 +21,9 @@ interface UserCardProps {
 }
 
 export async function renderUserCard(request: BunRequest, _server: BunServer) {
-	const width = 1200;
-	const height = 152;
+	const devicePixelRatio = 2;
+	const width = 1200 * devicePixelRatio;
+	const height = 152 * devicePixelRatio;
 
 	const id = request.params.id?.trim();
 
@@ -166,6 +167,7 @@ export async function renderUserCard(request: BunRequest, _server: BunServer) {
 			renderer,
 			images: { fetchCache: imageFetchCache },
 			onError: (error) => logger(`Render failed: ${error}`),
+			devicePixelRatio,
 		},
 	);
 }
