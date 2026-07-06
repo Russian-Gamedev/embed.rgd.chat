@@ -1,4 +1,5 @@
 import { renderInviteBanner } from "./embed/guild-banner";
+import { renderUserCard } from "./embed/user-card";
 import { checkRequiredEnvVars } from "./lib/config";
 import { connectRedis } from "./lib/redis";
 import { Color, createLogger } from "./lib/utils";
@@ -21,6 +22,10 @@ const server = Bun.serve({
 		"/invite/:code/banner": middlewares(
 			requestLoggerMiddleware,
 			RedisMiddleware("invite", withImageResponse(renderInviteBanner)),
+		),
+		"/users/:id/card": middlewares(
+			requestLoggerMiddleware,
+			RedisMiddleware("user", withImageResponse(renderUserCard)),
 		),
 		"/health": () => new Response("OK"),
 	},
