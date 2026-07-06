@@ -1,5 +1,5 @@
 import type { BunRequest } from "bun";
-import { IMAGE_CACHE_TTL_SECONDS } from "../lib/config";
+import { IMAGE_CACHE_TTL_SECONDS, IS_DEV } from "../lib/config";
 import { redis } from "../lib/redis";
 import type { BunServer } from "../lib/types";
 import { Color, createLogger } from "../lib/utils";
@@ -12,6 +12,10 @@ export function redisCacheMiddleware() {
 		handler: (request: BunRequest<Route>, server: BunServer) => Response | Promise<Response>,
 	) => {
 		return async (request: BunRequest<Route>, server: BunServer): Promise<Response> => {
+			if (IS_DEV) {
+				return handler(request, server);
+			}
+
 			const cacheKey = `cache:${prefix}:${new URL(request.url).pathname}`;
 			const typeKey = `${cacheKey}:type`;
 			const [cached, type] = await Promise.all([redis.getBuffer(cacheKey), redis.get(typeKey)]);
