@@ -1,4 +1,4 @@
-import type { InviteInfo } from "./types";
+import type { InviteInfo, User } from "./types";
 
 type RequestInitExtended = RequestInit & {
 	params?: Record<string, unknown>;
@@ -19,7 +19,6 @@ async function request<T>(path: string, options: RequestInitExtended = {}) {
 			url.searchParams.append(key, String(value));
 		}
 	}
-	console.log(url);
 	const response = await fetch(url.toString(), options);
 	if (!response.ok) {
 		throw new Error(`API request failed: ${response.status} ${response.statusText}`);
@@ -30,5 +29,8 @@ async function request<T>(path: string, options: RequestInitExtended = {}) {
 export const API = {
 	async getInviteInfo(code: string) {
 		return request<InviteInfo>(`/discord/invite/${code}`);
+	},
+	async getUser(id: string) {
+		return request<User>(`/users/${id}`);
 	},
 };
