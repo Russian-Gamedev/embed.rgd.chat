@@ -39,12 +39,12 @@ export async function renderUserCard(request: BunRequest, _server: BunServer) {
 	}
 
 	const props: UserCardProps = {
-		avatarURL: user.avatar_url,
+		avatarURL: user.avatarUrl,
 		nickname: user.nickname,
 		username: user.username,
 		about: user.about,
-		banner: user.banner_alt ?? user.banner,
-		bannerColor: user.banner_color,
+		banner: user.bannerAlt ?? user.banner,
+		bannerColor: user.bannerColor,
 		tags: user.tags,
 	};
 

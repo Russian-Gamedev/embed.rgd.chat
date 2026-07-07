@@ -14,16 +14,16 @@ export type User = {
 	id: string;
 	username: string;
 	nickname: string | null;
-	avatar_url: string;
+	avatarUrl: string;
 	about: string | null;
 	banner: string | null;
-	banner_alt: string | null;
-	banner_color: string;
-	birth_date: string | null;
-	first_joined_at: string;
-	last_active_at: string;
-	active_streak: number;
-	max_active_streak: number;
+	bannerAlt: string | null;
+	bannerColor: string;
+	birthDate: string | null;
+	firstJoinedAt: string;
+	lastActiveAt: string;
+	activeStreak: number;
+	maxActiveStreak: number;
 	tags: UserTag[];
 };
 
