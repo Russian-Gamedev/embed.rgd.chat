@@ -1,6 +1,6 @@
 import path from "node:path";
-import { googleFonts } from "@takumi-rs/helpers";
 import type { Renderer } from "@takumi-rs/core";
+import { googleFonts } from "@takumi-rs/helpers";
 import { Color, createLogger } from "./utils";
 
 const logger = createLogger("fonts", Color.yellow);
@@ -12,9 +12,7 @@ export async function registerFonts(renderer: Renderer) {
 		localFonts.map(async (fontPath) => {
 			logger(`Loading local font: ${fontPath}`);
 			const data = await Bun.file(path.resolve("assets/fonts", fontPath)).arrayBuffer();
-			const name = path
-				.basename(fontPath, path.extname(fontPath))
-				.split(/[- ]/)[0];
+			const name = path.basename(fontPath, path.extname(fontPath)).split(/[- ]/)[0];
 			await renderer.registerFont({ name, data });
 		}),
 	);
@@ -31,8 +29,6 @@ export async function registerFonts(renderer: Renderer) {
 		display: "swap",
 	});
 
-	await Promise.all(
-		mulishFonts.map((font) => renderer.registerFont(font)),
-	);
+	await Promise.all(mulishFonts.map((font) => renderer.registerFont(font)));
 	logger(`Registered ${mulishFonts.length} Mulish subsets`);
 }

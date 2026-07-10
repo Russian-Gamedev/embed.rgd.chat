@@ -10,7 +10,8 @@ export function withImageResponse<Route extends string>(
 				await response.ready;
 			}
 			return response;
-		} catch {
+		} catch (error) {
+			console.error(error);
 			return new Response("Failed to generate image", { status: 500 });
 		}
 	};

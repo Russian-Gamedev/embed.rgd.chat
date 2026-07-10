@@ -1,6 +1,6 @@
 import { Renderer } from "@takumi-rs/core";
-import { Color, createLogger } from "./lib/utils";
 import { registerFonts } from "./lib/register-fonts";
+import { Color, createLogger } from "./lib/utils";
 
 const logger = createLogger("renderer", Color.yellow);
 
