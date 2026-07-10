@@ -1,12 +1,13 @@
 import { renderInviteBanner } from "./embed/guild-banner";
+import { renderSupporterCard } from "./embed/supporter/supporter-card";
 import { renderUserCard } from "./embed/user-card";
 import { checkRequiredEnvVars } from "./lib/config";
 import { connectRedis } from "./lib/redis";
 import { Color, createLogger } from "./lib/utils";
 import { middlewares } from "./middlewares";
 import { redisCacheMiddleware } from "./middlewares/cache.middleware";
-import { requestLoggerMiddleware } from "./middlewares/logger.middleware";
 import { withImageResponse } from "./middlewares/image-response.middleware";
+import { requestLoggerMiddleware } from "./middlewares/logger.middleware";
 
 checkRequiredEnvVars();
 
@@ -26,6 +27,10 @@ const server = Bun.serve({
 		"/users/:id/card": middlewares(
 			requestLoggerMiddleware,
 			RedisMiddleware("user", withImageResponse(renderUserCard)),
+		),
+		"/supporter": middlewares(
+			requestLoggerMiddleware,
+			withImageResponse(renderSupporterCard),
 		),
 		"/health": () => new Response("OK"),
 	},
