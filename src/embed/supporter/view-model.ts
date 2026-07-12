@@ -1,5 +1,4 @@
 import type { ImageLoader } from "../../lib/image-loader";
-import { formatRubles } from "../../lib/utils";
 import { parseAvatarUrl } from "./avatar";
 import { parseAmount, parseBoolean, parseUsername } from "./validation";
 
@@ -12,7 +11,7 @@ export interface SupporterCardInput {
 
 export interface SupporterCardViewModel {
 	readonly username: string;
-	readonly amountText: string;
+	readonly amount: number;
 	readonly avatarSrc: string;
 	readonly showFeePaidText: boolean;
 }
@@ -32,7 +31,7 @@ export function createSupporterCardViewModel(
 ): SupporterCardViewModel {
 	return {
 		username: input.username,
-		amountText: `Занёс ${formatRubles(input.amount)}`,
+		amount: input.amount,
 		avatarSrc,
 		showFeePaidText: input.isFeePaidByUser,
 	};

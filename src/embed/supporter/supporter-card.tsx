@@ -2,9 +2,10 @@ import ImageResponse from "@takumi-rs/image-response";
 import type { BunRequest } from "bun";
 import { ImageFetchError, ImageLoader } from "../../lib/image-loader";
 import type { BunServer } from "../../lib/types";
-import { Color, createLogger, HttpError, JsonResponse } from "../../lib/utils";
+import { Color, createLogger, formatRubles, HttpError, JsonResponse } from "../../lib/utils";
 import { renderer } from "../../renderer";
 import { ALLOWED_AVATAR_HOSTS } from "./avatar";
+import { getDonationTheme } from "./config";
 import {
 	AVATAR_SIZE,
 	CARD_HEIGHT,
@@ -49,7 +50,19 @@ function DisplayName({ children, fontSize }: { children: string; fontSize: numbe
 	);
 }
 
-function AmountText({ children, fontSize }: { children: string; fontSize: number }) {
+function AmountText({
+	amount,
+	fontSize,
+	donationTheme,
+}: {
+	amount: number;
+	fontSize: number;
+	donationTheme: ReturnType<typeof getDonationTheme>;
+}) {
+	if (donationTheme?.Theme) {
+		return <donationTheme.Theme amount={amount} fontSize={fontSize} />;
+	}
+
 	return (
 		<span
 			style={{
@@ -57,14 +70,14 @@ function AmountText({ children, fontSize }: { children: string; fontSize: number
 				fontWeight: 800,
 				fontFamily: "Mulish",
 				whiteSpace: "nowrap",
-				background: "linear-gradient(135deg, #FF9A2B, #FFFF50)",
+				background: donationTheme?.gradient ?? "white",
 				backgroundClip: "text",
 				WebkitBackgroundClip: "text",
 				color: "transparent",
 				WebkitTextFillColor: "transparent",
 			}}
 		>
-			{children}
+			{`Занёс ${formatRubles(amount)}`}
 		</span>
 	);
 }
@@ -88,9 +101,11 @@ function FeePaidText() {
 function SupporterCard({
 	viewModel,
 	layout,
+	donationTheme,
 }: {
 	viewModel: SupporterCardViewModel;
 	layout: TextLayout;
+	donationTheme: ReturnType<typeof getDonationTheme>;
 }) {
 	return (
 		<div
@@ -106,8 +121,10 @@ function SupporterCard({
 				paddingRight: CARD_RIGHT_PADDING,
 				overflow: "hidden",
 				position: "relative",
+				...donationTheme?.cardBackground,
 			}}
 		>
+			{donationTheme?.CardOverlay && <donationTheme.CardOverlay />}
 			<img
 				src={viewModel.avatarSrc}
 				alt=""
@@ -130,7 +147,11 @@ function SupporterCard({
 					alignItems: "flex-end",
 				}}
 			>
-				<AmountText fontSize={layout.amountFontSize}>{viewModel.amountText}</AmountText>
+				<AmountText
+					fontSize={layout.amountFontSize}
+					amount={viewModel.amount}
+					donationTheme={donationTheme}
+				/>
 				{layout.showFeePaidText && <FeePaidText />}
 			</div>
 		</div>
@@ -162,18 +183,22 @@ export async function renderSupporterCard(request: BunRequest, _server: BunServe
 
 		const viewModel = createSupporterCardViewModel(input, avatarSrc);
 		const layout = await calculateTextLayout(viewModel);
+		const donationTheme = getDonationTheme(viewModel.amount);
 
-		return new ImageResponse(<SupporterCard viewModel={viewModel} layout={layout} />, {
-			width: CARD_WIDTH * DEVICE_PIXEL_RATIO,
-			height: CARD_HEIGHT * DEVICE_PIXEL_RATIO,
-			format: "webp",
-			renderer,
-			images: { fetchCache: imageLoader.cache },
-			onError: (error: unknown) => {
-				logger("Render failed: %o", error);
+		return new ImageResponse(
+			<SupporterCard viewModel={viewModel} layout={layout} donationTheme={donationTheme} />,
+			{
+				width: CARD_WIDTH * DEVICE_PIXEL_RATIO,
+				height: CARD_HEIGHT * DEVICE_PIXEL_RATIO,
+				format: "webp",
+				renderer,
+				images: { fetchCache: imageLoader.cache },
+				onError: (error: unknown) => {
+					logger("Render failed: %o", error);
+				},
+				devicePixelRatio: DEVICE_PIXEL_RATIO,
 			},
-			devicePixelRatio: DEVICE_PIXEL_RATIO,
-		});
+		);
 	} catch (error: unknown) {
 		if (error instanceof HttpError) {
 			return new JsonResponse({ error: error.message }, { status: error.statusCode });
