@@ -3,7 +3,6 @@ import type { BunRequest } from "bun";
 import type { InviteInfo } from "../lib/api";
 import { API } from "../lib/api/api";
 import { createCache } from "../lib/cache/cache";
-import type { BunServer } from "../lib/types";
 import { Color, createLogger, JsonResponse } from "../lib/utils";
 import { renderer } from "../renderer";
 
@@ -18,7 +17,7 @@ interface InviteBannerProps {
 	banner?: string | null;
 }
 
-export async function renderInviteBanner(request: BunRequest, _server: BunServer) {
+export async function renderInviteBanner(request: BunRequest) {
 	const width = 500;
 	const height = 220;
 

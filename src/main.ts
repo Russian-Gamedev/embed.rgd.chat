@@ -7,8 +7,8 @@ import { Color, createLogger } from "./lib/utils";
 import { middlewares } from "./middlewares";
 import { redisCacheMiddleware } from "./middlewares/cache.middleware";
 import { withImageResponse } from "./middlewares/image-response.middleware";
-import { signatureMiddleware } from "./middlewares/signature.middleware";
 import { requestLoggerMiddleware } from "./middlewares/logger.middleware";
+import { signatureMiddleware } from "./middlewares/signature.middleware";
 
 checkRequiredEnvVars();
 
