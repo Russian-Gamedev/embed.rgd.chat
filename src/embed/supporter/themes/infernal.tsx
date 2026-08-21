@@ -1,8 +1,7 @@
 import { readFileSync } from "node:fs";
-import path from "node:path";
+import image from "../../../../assets/backgrounds/infernal.webp";
 
-const imagePath = path.resolve(import.meta.dir, "../../../../assets/backgrounds/infernal.webp");
-const base64 = readFileSync(imagePath).toString("base64");
+const base64 = readFileSync(image).toString("base64");
 const imageDataUrl = `data:image/webp;base64,${base64}`;
 
 export const amount = 666;
