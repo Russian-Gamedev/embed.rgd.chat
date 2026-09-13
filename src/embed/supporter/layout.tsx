@@ -1,5 +1,8 @@
+import { extractEmojis } from "@takumi-rs/helpers/emoji";
 import { fromJsx } from "@takumi-rs/helpers/jsx";
+import { formatRubles } from "../../lib/utils";
 import { renderer } from "../../renderer";
+import type { DonationTheme } from "./config";
 import type { SupporterCardViewModel } from "./view-model";
 
 export const CARD_WIDTH = 565;
@@ -23,32 +26,51 @@ export interface TextLayout {
 	readonly showFeePaidText: boolean;
 }
 
-async function measureElementWidth(
-	children: React.ReactNode,
+async function measureNodeWidth(
+	node: React.ReactNode,
 	style: React.CSSProperties,
 ): Promise<number> {
-	const { node, stylesheets } = await fromJsx(
-		<span style={{ fontFamily: "Mulish", whiteSpace: "nowrap", ...style }}>{children}</span>,
+	const { node: converted, stylesheets } = await fromJsx(
+		<span style={{ fontFamily: "Mulish", whiteSpace: "nowrap", ...style }}>{node}</span>,
 	);
-	const measured = await renderer.measure(node, { stylesheets });
+	const measured = await renderer.measure(extractEmojis(converted, "twemoji"), { stylesheets });
 	return measured.width;
 }
 
-function measureFeePaidWidth(): Promise<number> {
-	return measureElementWidth("и оплатил коммисию ❤", {
+async function measureFeePaidWidth(): Promise<number> {
+	return measureNodeWidth("и оплатил коммисию ❤️", {
 		fontSize: FEE_PAID_FONT_SIZE,
 		fontWeight: 500,
 	});
 }
 
-export async function calculateTextLayout(viewModel: SupporterCardViewModel): Promise<TextLayout> {
+async function measureAmountWidth(
+	donationTheme: DonationTheme,
+	amount: number,
+	fontSize: number,
+): Promise<number> {
+	if (donationTheme?.Theme) {
+		const { node, stylesheets } = await fromJsx(
+			<donationTheme.Theme amount={amount} fontSize={fontSize} />,
+		);
+		const measured = await renderer.measure(extractEmojis(node, "twemoji"), { stylesheets });
+		return measured.width;
+	}
+
+	return measureNodeWidth(`Занёс ${formatRubles(amount)}`, { fontSize, fontWeight: 800 });
+}
+
+export async function calculateTextLayout(
+	viewModel: SupporterCardViewModel,
+	donationTheme: DonationTheme,
+): Promise<TextLayout> {
 	let usernameFs = USERNAME_FONT_SIZE_MAX;
 	let amountFs = AMOUNT_FONT_SIZE_MAX;
 
 	while (true) {
 		const [uWidth, aWidth] = await Promise.all([
-			measureElementWidth(viewModel.username, { fontSize: usernameFs, fontWeight: 700 }),
-			measureElementWidth(viewModel.amountText, { fontSize: amountFs, fontWeight: 800 }),
+			measureNodeWidth(viewModel.username, { fontSize: usernameFs, fontWeight: 700 }),
+			measureAmountWidth(donationTheme, viewModel.amount, amountFs),
 		]);
 
 		let totalWidth: number;

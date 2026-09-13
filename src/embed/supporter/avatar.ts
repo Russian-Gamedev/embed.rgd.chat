@@ -3,6 +3,14 @@ import { HttpError } from "../../lib/utils";
 
 export const ALLOWED_AVATAR_HOSTS = ["cdn.discordapp.com", "media.discordapp.net"];
 
+export const BLOBATAR_HOST = "blobatar.dev";
+
+export function buildBlobatarUrl(username: string, size: number): URL {
+	const url = new URL(`https://${BLOBATAR_HOST}/avatar/${encodeURIComponent(username)}`);
+	url.searchParams.set("size", String(size));
+	return url;
+}
+
 export function parseAvatarUrl(raw: string | null, imageLoader: ImageLoader): URL | null {
 	if (raw === null) {
 		return null;

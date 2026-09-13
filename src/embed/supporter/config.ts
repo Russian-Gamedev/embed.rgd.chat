@@ -55,6 +55,8 @@ export const donationGrades: DonationGrade[] = [
 	},
 ];
 
+export type DonationTheme = ReturnType<typeof getDonationTheme>;
+
 export function getDonationTheme(amount: number) {
 	const exactTheme = exactDonationThemeByAmount[amount];
 

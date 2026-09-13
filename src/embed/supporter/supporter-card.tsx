@@ -1,11 +1,12 @@
 import ImageResponse from "@takumi-rs/image-response";
 import type { BunRequest } from "bun";
+import { createCache } from "../../lib/cache/cache";
 import { ImageFetchError, ImageLoader } from "../../lib/image-loader";
 import type { BunServer } from "../../lib/types";
 import { Color, createLogger, formatRubles, HttpError, JsonResponse } from "../../lib/utils";
 import { renderer } from "../../renderer";
-import { ALLOWED_AVATAR_HOSTS } from "./avatar";
-import { getDonationTheme } from "./config";
+import { ALLOWED_AVATAR_HOSTS, BLOBATAR_HOST, buildBlobatarUrl } from "./avatar";
+import { type DonationTheme, getDonationTheme } from "./config";
 import {
 	AVATAR_SIZE,
 	CARD_HEIGHT,
@@ -29,10 +30,45 @@ const FALLBACK_CACHE_KEY = "__avatar_fallback__";
 
 const logger = createLogger("supporter-card", Color.magenta);
 
+const avatarCache = createCache<Promise<ArrayBuffer>>(600_000);
+
 const imageLoader = new ImageLoader({
 	allowedHosts: ALLOWED_AVATAR_HOSTS,
 	allowedMimeTypes: ["image/png", "image/jpeg", "image/webp", "image/gif"],
+	cache: avatarCache,
 });
+
+const blobatarLoader = new ImageLoader({
+	allowedHosts: [BLOBATAR_HOST],
+	allowedMimeTypes: ["image/svg+xml"],
+	cache: avatarCache,
+});
+
+async function resolveAvatarSrc(input: SupporterCardInput): Promise<string> {
+	if (input.avatarUrl !== null) {
+		try {
+			await imageLoader.load(input.avatarUrl);
+			return input.avatarUrl.toString();
+		} catch (error: unknown) {
+			if (error instanceof ImageFetchError) {
+				logger("Avatar fallback: kind=%s host=%s", error.kind, input.avatarUrl.hostname);
+			} else {
+				logger("Avatar fallback: unexpected error=%o", error);
+			}
+		}
+	}
+
+	const blobatarUrl = buildBlobatarUrl(input.username, AVATAR_SIZE * DEVICE_PIXEL_RATIO);
+	try {
+		await blobatarLoader.load(blobatarUrl);
+		return blobatarUrl.toString();
+	} catch (error: unknown) {
+		logger("Blobatar fallback failed: %o", error);
+	}
+
+	await imageLoader.ensureFallback("assets/avatar-fallback.png", FALLBACK_CACHE_KEY);
+	return FALLBACK_CACHE_KEY;
+}
 
 function DisplayName({ children, fontSize }: { children: string; fontSize: number }) {
 	return (
@@ -57,7 +93,7 @@ function AmountText({
 }: {
 	amount: number;
 	fontSize: number;
-	donationTheme: ReturnType<typeof getDonationTheme>;
+	donationTheme: DonationTheme;
 }) {
 	if (donationTheme?.Theme) {
 		return <donationTheme.Theme amount={amount} fontSize={fontSize} />;
@@ -93,7 +129,7 @@ function FeePaidText() {
 				color: "#b5bac1",
 			}}
 		>
-			и оплатил коммисию ❤
+			и оплатил коммисию ❤️
 		</span>
 	);
 }
@@ -105,7 +141,7 @@ function SupporterCard({
 }: {
 	viewModel: SupporterCardViewModel;
 	layout: TextLayout;
-	donationTheme: ReturnType<typeof getDonationTheme>;
+	donationTheme: DonationTheme;
 }) {
 	return (
 		<div
@@ -161,29 +197,10 @@ function SupporterCard({
 export async function renderSupporterCard(request: BunRequest, _server: BunServer) {
 	try {
 		const input = parseSupporterCardInput(new URL(request.url), imageLoader);
-
-		let avatarSrc: string;
-		if (input.avatarUrl !== null) {
-			try {
-				await imageLoader.load(input.avatarUrl);
-				avatarSrc = input.avatarUrl.toString();
-			} catch (error: unknown) {
-				if (error instanceof ImageFetchError) {
-					logger("Avatar fallback: kind=%s host=%s", error.kind, input.avatarUrl.hostname);
-				} else {
-					logger("Avatar fallback: unexpected error=%o", error);
-				}
-				await imageLoader.ensureFallback("assets/avatar-fallback.png", FALLBACK_CACHE_KEY);
-				avatarSrc = FALLBACK_CACHE_KEY;
-			}
-		} else {
-			await imageLoader.ensureFallback("assets/avatar-fallback.png", FALLBACK_CACHE_KEY);
-			avatarSrc = FALLBACK_CACHE_KEY;
-		}
-
+		const avatarSrc = await resolveAvatarSrc(input);
 		const viewModel = createSupporterCardViewModel(input, avatarSrc);
-		const layout = await calculateTextLayout(viewModel);
 		const donationTheme = getDonationTheme(viewModel.amount);
+		const layout = await calculateTextLayout(viewModel, donationTheme);
 
 		return new ImageResponse(
 			<SupporterCard viewModel={viewModel} layout={layout} donationTheme={donationTheme} />,
@@ -192,7 +209,7 @@ export async function renderSupporterCard(request: BunRequest, _server: BunServe
 				height: CARD_HEIGHT * DEVICE_PIXEL_RATIO,
 				format: "webp",
 				renderer,
-				images: { fetchCache: imageLoader.cache },
+				images: { fetchCache: avatarCache },
 				onError: (error: unknown) => {
 					logger("Render failed: %o", error);
 				},
