@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ru">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>embed.rgd.chat editor</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;600;700;800&display=swap"
+			rel="stylesheet"
+		/>
+		<link rel="stylesheet" href="./style.css" />
+	</head>
+	<body>
+		<aside class="sidebar">
+			<h1 class="brand">embed.rgd.chat</h1>
+			<nav id="tabs" class="tabs"></nav>
+			<div id="fields"></div>
+			<div class="secret" id="secret-field">
+				<label for="secret">SECRET_KEY</label>
+				<input
+					id="secret"
+					type="password"
+					placeholder="для подписи /supporter"
+					autocomplete="off"
+				/>
+				<small class="hint">Вводится вручную, хранится только в памяти вкладки</small>
+			</div>
+		</aside>
+		<main class="pane">
+			<header class="toolbar">
+				<button id="copy-image" class="button primary" type="button">Скопировать изображение</button>
+				<button id="copy-link" class="button" type="button">Скопировать ссылку</button>
+				<span id="dimensions" class="dimensions"></span>
+			</header>
+			<p id="status" class="status" hidden></p>
+			<section class="preview-area">
+				<img id="preview" alt="Превью" />
+			</section>
+		</main>
+		<script src="./main.ts"></script>
+	</body>
+</html>

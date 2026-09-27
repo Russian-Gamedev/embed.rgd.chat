@@ -1,7 +1,9 @@
+import editorIndex from "../editor/index.html";
 import { renderInviteBanner } from "./embed/guild-banner";
 import { renderSupporterCard } from "./embed/supporter/supporter-card";
+import { renderTitle } from "./embed/title";
 import { renderUserCard } from "./embed/user-card";
-import { checkRequiredEnvVars } from "./lib/config";
+import { checkRequiredEnvVars, IS_DEV } from "./lib/config";
 import { connectRedis } from "./lib/redis";
 import { Color, createLogger } from "./lib/utils";
 import { middlewares } from "./middlewares";
@@ -20,7 +22,9 @@ const RedisMiddleware = redisCacheMiddleware();
 
 const server = Bun.serve({
 	port: process.env.PORT ? parseInt(process.env.PORT, 10) : 3000,
+	development: IS_DEV ? { hmr: true, console: true } : false,
 	routes: {
+		"/editor": editorIndex,
 		"/invite/:code/banner": middlewares(
 			requestLoggerMiddleware,
 			RedisMiddleware("invite", withImageResponse(renderInviteBanner)),
@@ -33,6 +37,10 @@ const server = Bun.serve({
 			requestLoggerMiddleware,
 			signatureMiddleware,
 			withImageResponse(renderSupporterCard),
+		),
+		"/title": middlewares(
+			requestLoggerMiddleware,
+			RedisMiddleware("title", withImageResponse(renderTitle)),
 		),
 		"/health": () => new Response("OK"),
 	},

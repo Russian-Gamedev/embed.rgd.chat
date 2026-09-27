@@ -31,4 +31,13 @@ export async function registerFonts(renderer: Renderer) {
 
 	await Promise.all(mulishFonts.map((font) => renderer.registerFont(font)));
 	logger(`Registered ${mulishFonts.length} Mulish subsets`);
+
+	logger("Loading Google Font: Open Sans Condensed");
+	const titleFonts = await googleFonts({
+		families: [{ name: "Open Sans Condensed", weight: [700] }],
+		display: "swap",
+	});
+
+	await Promise.all(titleFonts.map((font) => renderer.registerFont(font)));
+	logger(`Registered ${titleFonts.length} Open Sans Condensed subsets`);
 }

@@ -16,7 +16,9 @@ export function redisCacheMiddleware() {
 				return handler(request, server);
 			}
 
-			const cacheKey = `cache:${prefix}:${new URL(request.url).pathname}`;
+			const url = new URL(request.url);
+			// Include the query so routes with parameters outside the path (e.g. /title colors) don't collide.
+			const cacheKey = `cache:${prefix}:${url.pathname}${url.search}`;
 			const typeKey = `${cacheKey}:type`;
 			const [cached, type] = await Promise.all([redis.getBuffer(cacheKey), redis.get(typeKey)]);
 			if (cached && type) {
