@@ -16,6 +16,7 @@ mock.module("../lib/config", () => ({
 	IS_DEV: false,
 	IMAGE_CACHE_TTL_SECONDS: 900,
 	S3_PUBLIC_URL: "https://cdn.test",
+	S3_PREFIX: "embed",
 	SECRET_KEY: "test",
 	checkRequiredEnvVars: () => {},
 }));

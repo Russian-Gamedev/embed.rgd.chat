@@ -23,12 +23,13 @@ bun run start:dev
 | `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` | production | S3 credentials (read natively by `Bun.S3Client`) |
 | `S3_REGION` / `S3_ENDPOINT` | no | For S3-compatible providers |
 | `S3_PUBLIC_URL` | production | Public base URL of the bucket/CDN, e.g. `https://cdn.rgd.chat/embed` |
+| `S3_PREFIX` | no (default `embed`) | Base folder inside the bucket; all rendered images are stored under it |
 
 In development (`NODE_ENV` ≠ `production`) the S3 cache is bypassed and images are rendered directly.
 
 ## API
 
-Render routes don't serve image bytes themselves: they return a `302` redirect to a WebP object in S3 (`{S3_PUBLIC_URL}/{prefix}/{sha256}.webp`). An object older than its route's freshness window is re-rendered in the background while the current one keeps being served (stale-while-revalidate): `invite` 1 hour, `user` 5 minutes, `supporter` 1 day, `title` `IMAGE_CACHE_TTL_SECONDS` (default 900). CDN caching of the objects is configured on the bucket/CDN side.
+Render routes don't serve image bytes themselves: they return a `302` redirect to a WebP object in S3 (`{S3_PUBLIC_URL}/{S3_PREFIX}/{route}/{sha256}.webp`). An object older than its route's freshness window is re-rendered in the background while the current one keeps being served (stale-while-revalidate): `invite` 1 hour, `user` 5 minutes, `supporter` 1 day, `title` `IMAGE_CACHE_TTL_SECONDS` (default 900). CDN caching of the objects is configured on the bucket/CDN side.
 
 ### `GET /invite/:code/banner`
 

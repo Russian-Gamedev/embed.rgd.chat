@@ -36,3 +36,6 @@ export const ROUTE_CACHE_TTL_SECONDS = {
 
 const rawPublicUrl = process.env.S3_PUBLIC_URL ?? "";
 export const S3_PUBLIC_URL = rawPublicUrl.endsWith("/") ? rawPublicUrl.slice(0, -1) : rawPublicUrl;
+
+const rawPrefix = process.env.S3_PREFIX ?? "embed";
+export const S3_PREFIX = rawPrefix.replace(/^\/+|\/+$/g, "");

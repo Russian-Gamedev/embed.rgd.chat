@@ -2,9 +2,9 @@ import { describe, expect, test } from "bun:test";
 import { s3CacheKey } from "./s3";
 
 describe("s3CacheKey", () => {
-	test("shape: prefix/hash.webp", () => {
+	test("shape: base folder/prefix/hash.webp", () => {
 		expect(s3CacheKey("title", new URL("https://embed.rgd.chat/title?text=hi"))).toMatch(
-			/^title\/[0-9a-f]{64}\.webp$/,
+			/^embed\/title\/[0-9a-f]{64}\.webp$/,
 		);
 	});
 

@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { canonicalQuery, EXP_PARAM, SIGN_PARAM } from "./canonical-query";
-import { S3_PUBLIC_URL } from "./config";
+import { S3_PREFIX, S3_PUBLIC_URL } from "./config";
 
 export const s3 = new Bun.S3Client({ bucket: process.env.S3_BUCKET });
 
@@ -14,9 +14,10 @@ export function s3ObjectUrl(key: string): string {
  * Stable S3 object key for a rendered image: same parameters in any order
  * produce the same key; signing parameters are excluded so different
  * signatures of the same content share one object.
+ * Every object lives under the configured base folder (S3_PREFIX, default "embed").
  */
 export function s3CacheKey(prefix: string, url: URL): string {
 	const payload = `${url.pathname}?${canonicalQuery(url.searchParams, CACHE_KEY_EXCLUDED_PARAMS)}`;
 	const hash = createHash("sha256").update(payload).digest("hex");
-	return `${prefix}/${hash}.webp`;
+	return [S3_PREFIX, prefix, `${hash}.webp`].filter(Boolean).join("/");
 }
