@@ -12,15 +12,31 @@ bun install
 bun run start:dev
 ```
 
+## Environment
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `API_BASE_URL` | yes | rgd API base, e.g. `https://bot.rgd.chat` |
+| `SECRET_KEY` | yes | HMAC key for signed `/supporter` URLs |
+| `IMAGE_CACHE_TTL_SECONDS` | no (default `900`) | How long a rendered image stays fresh; older objects are re-rendered in the background |
+| `S3_BUCKET` | production | Bucket for rendered images |
+| `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` | production | S3 credentials (read natively by `Bun.S3Client`) |
+| `S3_REGION` / `S3_ENDPOINT` | no | For S3-compatible providers |
+| `S3_PUBLIC_URL` | production | Public base URL of the bucket/CDN, e.g. `https://cdn.rgd.chat/embed` |
+
+In development (`NODE_ENV` ≠ `production`) the S3 cache is bypassed and images are rendered directly.
+
 ## API
+
+Render routes don't serve image bytes themselves: they return a `302` redirect to a WebP object in S3 (`{S3_PUBLIC_URL}/{prefix}/{sha256}.webp`). An object older than its route's freshness window is re-rendered in the background while the current one keeps being served (stale-while-revalidate): `invite` 1 hour, `user` 5 minutes, `supporter` 1 day, `title` `IMAGE_CACHE_TTL_SECONDS` (default 900). CDN caching of the objects is configured on the bucket/CDN side.
 
 ### `GET /invite/:code/banner`
 
-Returns a 500×220 WebP image banner for the given Discord invite code. Responses are cached in Redis for 60 seconds.
+Returns a 500×220 WebP image banner for the given Discord invite code.
 
 ### `GET /title`
 
-Returns a transparent WebP title in the Russian Gamedev logo style, rendered @2x. Responses are cached in Redis.
+Returns a transparent WebP title in the Russian Gamedev logo style, rendered @2x.
 
 Parameters:
 

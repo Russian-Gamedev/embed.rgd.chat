@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { canonicalQuery, SIGN_PARAM } from "./canonical-query";
+import { canonicalQuery, EXP_PARAM, SIGN_PARAM } from "./canonical-query";
 
 export { canonicalQuery };
 
@@ -9,7 +9,7 @@ export function hmacSign(payload: string, secret: string): string {
 
 export function verifySignedUrl(options: { url: URL; secret: string }): boolean {
 	const sign = options.url.searchParams.get(SIGN_PARAM);
-	const expRaw = options.url.searchParams.get("exp");
+	const expRaw = options.url.searchParams.get(EXP_PARAM);
 
 	if (!sign) {
 		return false;

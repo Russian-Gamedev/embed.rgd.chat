@@ -3,11 +3,10 @@ import { renderInviteBanner } from "./embed/guild-banner";
 import { renderSupporterCard } from "./embed/supporter/supporter-card";
 import { renderTitle } from "./embed/title";
 import { renderUserCard } from "./embed/user-card";
-import { checkRequiredEnvVars, IS_DEV } from "./lib/config";
-import { connectRedis } from "./lib/redis";
+import { checkRequiredEnvVars, IS_DEV, ROUTE_CACHE_TTL_SECONDS } from "./lib/config";
 import { Color, createLogger } from "./lib/utils";
 import { middlewares } from "./middlewares";
-import { redisCacheMiddleware } from "./middlewares/cache.middleware";
+import { s3CacheMiddleware } from "./middlewares/cache.middleware";
 import { withImageResponse } from "./middlewares/image-response.middleware";
 import { requestLoggerMiddleware } from "./middlewares/logger.middleware";
 import { signatureMiddleware } from "./middlewares/signature.middleware";
@@ -16,10 +15,6 @@ checkRequiredEnvVars();
 
 const logger = createLogger("main", Color.lime);
 
-await connectRedis();
-
-const RedisMiddleware = redisCacheMiddleware();
-
 const server = Bun.serve({
 	port: process.env.PORT ? parseInt(process.env.PORT, 10) : 3000,
 	development: IS_DEV ? { hmr: true, console: true } : false,
@@ -27,20 +22,28 @@ const server = Bun.serve({
 		"/editor": editorIndex,
 		"/invite/:code/banner": middlewares(
 			requestLoggerMiddleware,
-			RedisMiddleware("invite", withImageResponse(renderInviteBanner)),
+			s3CacheMiddleware(
+				"invite",
+				withImageResponse(renderInviteBanner),
+				ROUTE_CACHE_TTL_SECONDS.invite,
+			),
 		),
 		"/users/:id/card": middlewares(
 			requestLoggerMiddleware,
-			RedisMiddleware("user", withImageResponse(renderUserCard)),
+			s3CacheMiddleware("user", withImageResponse(renderUserCard), ROUTE_CACHE_TTL_SECONDS.user),
 		),
 		"/supporter": middlewares(
 			requestLoggerMiddleware,
 			signatureMiddleware,
-			withImageResponse(renderSupporterCard),
+			s3CacheMiddleware(
+				"supporter",
+				withImageResponse(renderSupporterCard),
+				ROUTE_CACHE_TTL_SECONDS.supporter,
+			),
 		),
 		"/title": middlewares(
 			requestLoggerMiddleware,
-			RedisMiddleware("title", withImageResponse(renderTitle)),
+			s3CacheMiddleware("title", withImageResponse(renderTitle)),
 		),
 		"/health": () => new Response("OK"),
 	},
