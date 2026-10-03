@@ -29,7 +29,7 @@ In development (`NODE_ENV` ≠ `production`) the S3 cache is bypassed and images
 
 ## API
 
-Render routes don't serve image bytes themselves: they return a `302` redirect to a WebP object in S3 (`{S3_PUBLIC_URL}/{S3_PREFIX}/{route}/{sha256}.webp`). An object older than its route's freshness window is re-rendered in the background while the current one keeps being served (stale-while-revalidate): `invite` 1 hour, `user` 5 minutes, `supporter` 1 day, `title` `IMAGE_CACHE_TTL_SECONDS` (default 900). CDN caching of the objects is configured on the bucket/CDN side.
+Render routes don't serve image bytes themselves: they return a `302` redirect to a WebP object in S3 (`{S3_PUBLIC_URL}/{S3_PREFIX}/{route}/{sha256}.webp`). Each route declares the query parameters it renders (`QUERY_PARAMS` in its embed module); the key is hashed from the route path and those parameters only — unknown parameters (e.g. cache busters like `t=Date.now()`) don't affect the key and don't create new objects. An object older than its route's freshness window is re-rendered in the background while the current one keeps being served (stale-while-revalidate): `invite` 1 hour, `user` 5 minutes, `supporter` 1 day, `title` `IMAGE_CACHE_TTL_SECONDS` (default 900). CDN caching of the objects is configured on the bucket/CDN side.
 
 ### `GET /invite/:code/banner`
 

@@ -46,14 +46,21 @@ async function renderAndUpload<Route extends string>(
 export function s3CacheMiddleware<Route extends string>(
 	prefix: string,
 	handler: (request: BunRequest<Route>, server: BunServer) => Response | Promise<Response>,
-	ttlSeconds: number = IMAGE_CACHE_TTL_SECONDS,
+	options: {
+		/** Freshness window; defaults to IMAGE_CACHE_TTL_SECONDS. */
+		ttlSeconds?: number;
+		/** Query params the route renders (QUERY_PARAMS of its embed module); the S3 cache key is built from these only. */
+		queryParams: ReadonlySet<string>;
+	},
 ) {
+	const ttlSeconds = options.ttlSeconds ?? IMAGE_CACHE_TTL_SECONDS;
+
 	return async (request: BunRequest<Route>, server: BunServer): Promise<Response> => {
 		if (IS_DEV) {
 			return handler(request, server);
 		}
 
-		const key = s3CacheKey(prefix, new URL(request.url));
+		const key = s3CacheKey(prefix, new URL(request.url), options.queryParams);
 		const objectUrl = s3ObjectUrl(key);
 
 		let lastModified: Date | null = null;

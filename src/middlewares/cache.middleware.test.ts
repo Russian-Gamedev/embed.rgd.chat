@@ -52,12 +52,20 @@ afterAll(() => {
 	client.write = originalWrite;
 });
 
-function keyFor(id: string): string {
-	return s3CacheKey("title", new URL(`https://server/x?id=${id}`));
+const TITLE_OPTIONS = { queryParams: new Set(["text"]) };
+
+function keyFor(text: string): string {
+	return s3CacheKey(
+		"title",
+		new URL(`https://server/title?text=${encodeURIComponent(text)}`),
+		TITLE_OPTIONS.queryParams,
+	);
 }
 
-function makeRequest(id: string): BunRequest<"/:id"> {
-	return { url: `https://server/x?id=${id}` } as unknown as BunRequest<"/:id">;
+function makeRequest(text: string): BunRequest<"/title"> {
+	return {
+		url: `https://server/title?text=${encodeURIComponent(text)}`,
+	} as unknown as BunRequest<"/title">;
 }
 
 const server = {} as BunServer;
@@ -86,7 +94,7 @@ beforeEach(() => {
 
 describe("s3CacheMiddleware", () => {
 	test("cold miss: renders, uploads, redirects", async () => {
-		const middleware = s3CacheMiddleware("title", okHandler);
+		const middleware = s3CacheMiddleware("title", okHandler, TITLE_OPTIONS);
 		const response = await middleware(makeRequest("a"), server);
 
 		expect(response.status).toBe(302);
@@ -97,7 +105,7 @@ describe("s3CacheMiddleware", () => {
 
 	test("fresh object: redirects without rendering", async () => {
 		objects.set(keyFor("b"), new Date());
-		const middleware = s3CacheMiddleware("title", okHandler);
+		const middleware = s3CacheMiddleware("title", okHandler, TITLE_OPTIONS);
 		const response = await middleware(makeRequest("b"), server);
 
 		expect(response.status).toBe(302);
@@ -107,7 +115,7 @@ describe("s3CacheMiddleware", () => {
 
 	test("stale object: redirects immediately, re-renders in background", async () => {
 		objects.set(keyFor("c"), new Date(Date.now() - 901_000));
-		const middleware = s3CacheMiddleware("title", okHandler);
+		const middleware = s3CacheMiddleware("title", okHandler, TITLE_OPTIONS);
 		const response = await middleware(makeRequest("c"), server);
 
 		expect(response.status).toBe(302);
@@ -118,7 +126,7 @@ describe("s3CacheMiddleware", () => {
 
 	test("concurrent stale requests trigger a single render", async () => {
 		objects.set(keyFor("d"), new Date(Date.now() - 901_000));
-		const middleware = s3CacheMiddleware("title", okHandler);
+		const middleware = s3CacheMiddleware("title", okHandler, TITLE_OPTIONS);
 		const [first, second] = await Promise.all([
 			middleware(makeRequest("d"), server),
 			middleware(makeRequest("d"), server),
@@ -132,7 +140,11 @@ describe("s3CacheMiddleware", () => {
 	});
 
 	test("failed render passes through on cold miss", async () => {
-		const middleware = s3CacheMiddleware("title", () => new Response("nope", { status: 400 }));
+		const middleware = s3CacheMiddleware(
+			"title",
+			() => new Response("nope", { status: 400 }),
+			TITLE_OPTIONS,
+		);
 		const response = await middleware(makeRequest("e"), server);
 
 		expect(response.status).toBe(400);
@@ -141,7 +153,7 @@ describe("s3CacheMiddleware", () => {
 
 	test("failed upload returns 500 on cold miss", async () => {
 		failUpload = true;
-		const middleware = s3CacheMiddleware("title", okHandler);
+		const middleware = s3CacheMiddleware("title", okHandler, TITLE_OPTIONS);
 		const response = await middleware(makeRequest("f"), server);
 
 		expect(response.status).toBe(500);
@@ -149,7 +161,7 @@ describe("s3CacheMiddleware", () => {
 
 	test("custom ttl shorter than default: fresh object becomes stale", async () => {
 		objects.set(keyFor("s"), new Date(Date.now() - 120_000)); // age 2 min, default ttl 15 min
-		const middleware = s3CacheMiddleware("title", okHandler, 60);
+		const middleware = s3CacheMiddleware("title", okHandler, { ...TITLE_OPTIONS, ttlSeconds: 60 });
 		const response = await middleware(makeRequest("s"), server);
 
 		expect(response.status).toBe(302);
@@ -159,7 +171,10 @@ describe("s3CacheMiddleware", () => {
 
 	test("custom ttl longer than default: stale object stays fresh", async () => {
 		objects.set(keyFor("l"), new Date(Date.now() - 901_000)); // age 15 min, custom ttl 1 hour
-		const middleware = s3CacheMiddleware("title", okHandler, 60 * 60);
+		const middleware = s3CacheMiddleware("title", okHandler, {
+			...TITLE_OPTIONS,
+			ttlSeconds: 60 * 60,
+		});
 		const response = await middleware(makeRequest("l"), server);
 
 		expect(response.status).toBe(302);

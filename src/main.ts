@@ -1,8 +1,11 @@
 import editorIndex from "../editor/index.html";
-import { renderInviteBanner } from "./embed/guild-banner";
-import { renderSupporterCard } from "./embed/supporter/supporter-card";
-import { renderTitle } from "./embed/title";
-import { renderUserCard } from "./embed/user-card";
+import { QUERY_PARAMS as INVITE_QUERY_PARAMS, renderInviteBanner } from "./embed/guild-banner";
+import {
+	renderSupporterCard,
+	QUERY_PARAMS as SUPPORTER_QUERY_PARAMS,
+} from "./embed/supporter/supporter-card";
+import { renderTitle, QUERY_PARAMS as TITLE_QUERY_PARAMS } from "./embed/title";
+import { renderUserCard, QUERY_PARAMS as USER_QUERY_PARAMS } from "./embed/user-card";
 import { checkRequiredEnvVars, IS_DEV, ROUTE_CACHE_TTL_SECONDS } from "./lib/config";
 import { Color, createLogger } from "./lib/utils";
 import { middlewares } from "./middlewares";
@@ -22,28 +25,31 @@ const server = Bun.serve({
 		"/editor": editorIndex,
 		"/invite/:code/banner": middlewares(
 			requestLoggerMiddleware,
-			s3CacheMiddleware(
-				"invite",
-				withImageResponse(renderInviteBanner),
-				ROUTE_CACHE_TTL_SECONDS.invite,
-			),
+			s3CacheMiddleware("invite", withImageResponse(renderInviteBanner), {
+				ttlSeconds: ROUTE_CACHE_TTL_SECONDS.invite,
+				queryParams: INVITE_QUERY_PARAMS,
+			}),
 		),
 		"/users/:id/card": middlewares(
 			requestLoggerMiddleware,
-			s3CacheMiddleware("user", withImageResponse(renderUserCard), ROUTE_CACHE_TTL_SECONDS.user),
+			s3CacheMiddleware("user", withImageResponse(renderUserCard), {
+				ttlSeconds: ROUTE_CACHE_TTL_SECONDS.user,
+				queryParams: USER_QUERY_PARAMS,
+			}),
 		),
 		"/supporter": middlewares(
 			requestLoggerMiddleware,
 			signatureMiddleware,
-			s3CacheMiddleware(
-				"supporter",
-				withImageResponse(renderSupporterCard),
-				ROUTE_CACHE_TTL_SECONDS.supporter,
-			),
+			s3CacheMiddleware("supporter", withImageResponse(renderSupporterCard), {
+				ttlSeconds: ROUTE_CACHE_TTL_SECONDS.supporter,
+				queryParams: SUPPORTER_QUERY_PARAMS,
+			}),
 		),
 		"/title": middlewares(
 			requestLoggerMiddleware,
-			s3CacheMiddleware("title", withImageResponse(renderTitle)),
+			s3CacheMiddleware("title", withImageResponse(renderTitle), {
+				queryParams: TITLE_QUERY_PARAMS,
+			}),
 		),
 		"/health": () => new Response("OK"),
 	},

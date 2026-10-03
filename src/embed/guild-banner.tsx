@@ -9,6 +9,9 @@ import { renderer } from "../renderer";
 const logger = createLogger("guild-banner", Color.magenta);
 const imageFetchCache = createCache<Promise<ArrayBuffer>>(600_000);
 
+/** No query params — everything comes from the path. */
+export const QUERY_PARAMS: ReadonlySet<string> = new Set();
+
 interface InviteBannerProps {
 	title: string;
 	iconURL: string;

@@ -16,6 +16,14 @@ export interface SupporterCardViewModel {
 	readonly showFeePaidText: boolean;
 }
 
+/** Query params parseSupporterCardInput reads; the S3 cache key is built from these only. */
+export const QUERY_PARAMS: ReadonlySet<string> = new Set([
+	"username",
+	"amount",
+	"avatar_url",
+	"is_fee_paid_by_user",
+]);
+
 export function parseSupporterCardInput(url: URL, imageLoader: ImageLoader): SupporterCardInput {
 	const username = parseUsername(url.searchParams.get("username"));
 	const amount = parseAmount(url.searchParams.get("amount"));

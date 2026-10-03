@@ -22,7 +22,7 @@ import {
 	type SupporterCardViewModel,
 } from "./view-model";
 
-export { parseSupporterCardInput } from "./view-model";
+export { parseSupporterCardInput, QUERY_PARAMS } from "./view-model";
 
 const DEVICE_PIXEL_RATIO = 2;
 

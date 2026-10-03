@@ -544,6 +544,23 @@ async function resolveTitleBackground(
 	return background;
 }
 
+/** Query params renderTitle reads; the S3 cache key is built from these only. */
+export const QUERY_PARAMS: ReadonlySet<string> = new Set([
+	"text",
+	"fill",
+	"stroke",
+	"format",
+	"background",
+	"blur",
+	"overlay",
+	"width",
+	"height",
+	"font_size",
+	"margin",
+	"rotate",
+	"level",
+]);
+
 export async function renderTitle(request: BunRequest, _server: BunServer) {
 	try {
 		const url = new URL(request.url);

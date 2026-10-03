@@ -10,6 +10,9 @@ import { renderer } from "../renderer";
 const logger = createLogger("user-card", Color.magenta);
 const imageFetchCache = createCache<Promise<ArrayBuffer>>(600_000);
 
+/** No query params — everything comes from the path. */
+export const QUERY_PARAMS: ReadonlySet<string> = new Set();
+
 interface UserCardProps {
 	avatarURL: string;
 	nickname: string | null;
