@@ -22,6 +22,7 @@ const server = Bun.serve({
 	port: process.env.PORT ? parseInt(process.env.PORT, 10) : 3000,
 	development: IS_DEV ? { hmr: true, console: true } : false,
 	routes: {
+		"/": () => new Response("still alive. still generating. still regretting it."),
 		"/editor": editorIndex,
 		"/invite/:code/banner": middlewares(
 			requestLoggerMiddleware,
