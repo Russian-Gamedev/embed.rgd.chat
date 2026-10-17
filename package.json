@@ -27,7 +27,7 @@
 		"@takumi-rs/core": "^2.13.7",
 		"@takumi-rs/helpers": "^2.13.7",
 		"@takumi-rs/image-response": "^2.13.7",
-		"@takumi-rs/wasm": "^2.13.7",
+		"@takumi-rs/wasm": "^2.14.0",
 		"@types/react": "^19.3.0",
 		"react": "^19.3.0",
 		"takumi-js": "^2.13.7"
