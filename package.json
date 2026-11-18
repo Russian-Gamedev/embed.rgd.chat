@@ -24,9 +24,9 @@
 	},
 	"dependencies": {
 		"@biomejs/biome": "^2.5.15",
-		"@takumi-rs/core": "^2.13.7",
+		"@takumi-rs/core": "^2.20.0",
 		"@takumi-rs/helpers": "^2.20.0",
-		"@takumi-rs/image-response": "^2.14.0",
+		"@takumi-rs/image-response": "^2.20.0",
 		"@takumi-rs/wasm": "^2.20.0",
 		"@types/react": "^19.3.0",
 		"react": "^19.3.0",
